@@ -1,27 +1,30 @@
 ﻿using BuildingBlocks.CQRS;
+using Catalog.API.Products.CreateProduct;
 
 namespace Catalog.API;
 
 public static class DependencyInjection
 {
     public static IServiceCollection AddCqrsHandlers(
-    this IServiceCollection services)
+        this IServiceCollection services)
     {
-        // CQRS Dispatchers
+        // Dispatchers
         services.AddScoped<ICommandDispatcher, CommandDispatcher>();
         services.AddScoped<IQueryDispatcher, QueryDispatcher>();
 
-        // Auto register ALL command handlers
+        var assembly = typeof(CreateProductHandler).Assembly;
+
+        // Command handlers
         services.Scan(scan => scan
-            .FromApplicationDependencies()
+            .FromAssemblies(assembly)
             .AddClasses(classes => classes
                 .AssignableToAny(typeof(ICommandHandler<,>)))
             .AsImplementedInterfaces()
             .WithScopedLifetime());
 
-        // Auto register ALL query handlers
+        // Query handlers
         services.Scan(scan => scan
-            .FromApplicationDependencies()
+            .FromAssemblies(assembly)
             .AddClasses(classes => classes
                 .AssignableToAny(typeof(IQueryHandler<,>)))
             .AsImplementedInterfaces()
